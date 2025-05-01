@@ -1,7 +1,3 @@
-'''
-Funkcja sprawdzająca ile w zdyskretyzowanym systemie jest par obiektów niedeterministycznych
-'''
-
 def count_nondeterministic_pairs(disc) -> int:
     cond_cols = list(disc.columns[:-1])
     dec_col = disc.columns[-1]
@@ -11,8 +7,9 @@ def count_nondeterministic_pairs(disc) -> int:
         n = len(group)
         if n < 2:
             continue
+        class_counts = group[dec_col].value_counts()
+        same_pairs = sum(cnt * (cnt - 1) // 2 for cnt in class_counts)
         total_pairs = n * (n - 1) // 2
-        same_pairs = sum(cnt * (cnt - 1) // 2 for cnt in group[dec_col].value_counts())
         nondet_pairs += (total_pairs - same_pairs)
 
     print(f"Liczba par niedeterministycznych: {nondet_pairs}")

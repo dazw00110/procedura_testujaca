@@ -1,0 +1,59 @@
+✅ ZROBIONE PRAWIDŁOWO:
+
+1.Wczytywanie danych
+    -Poprawnie obsługuje pliki CSV (różne formaty, delimiter)
+    -Wykrywa puste wartości i błędne formaty
+2.Weryfikacja danych
+    -check_shape() sprawdza rozmiary tabel
+    -check_intervals() weryfikuje poprawność przedziałów
+3.Obliczenia metryk
+    -det – prawidłowo liczy pary niedeterministyczne
+    -cuts – poprawnie zlicza liczbę cięć
+4.Generowanie raportu
+    -Wyniki zapisywane w wymaganym formacie
+    -Sumowanie wyników dla wszystkich testów
+
+
+❌ WYMAGA POPRAWY:
+
+1.Pomiar czasu MD
+    -Obecnie mierzy cały czas testów, a powinien mierzyć tylko czas wykonania metody dyskretyzacji
+    -Rozwiązanie: Dodać oddzielny pomiar dla funkcji MD (np. przez time.time() tylko wokół jej wywołania)
+2.Usuwanie starych plików
+    -Brakuje czyszczenia plików DISCdata*.csv przed nowym testem
+    -Rozwiązanie: Dodać usuwanie plików przed uruchomieniem MD
+3.Integracja z MD Grupy 1
+-Kod zakłada, że MD jest osobnym skryptem – trzeba dopasować wywołanie
+Rozwiązanie:
+python
+# Przykład poprawnego wywołania:
+start_time = time.time()
+group1_algorithm.discretize(input_path, output_path)  # Bezpośrednie wywołanie
+md_time = time.time() - start_time
+
+✔️ CZY POPRAWIONE:
+
+Tak, przyjrzyjmy się krok po kroku każdemu z punktów:
+
+✔️ Zrobione: Pomiar czasu MD
+– Wcześniej czas był mierzony razem z etapem testowania. Teraz w run_md_algorithm masz własny start_time = time.time() i elapsed = time.time() - start_time otaczające tylko wywołanie subprocess.run, a następnie ten md_time trafia do raportu.
+
+✔️ Zrobione: Usuwanie starych plików
+– Zaraz na początku main() ubrano pętlę po glob.glob(os.path.join(data_dir, 'DISC*.csv')) i usuwanie każdego znalezionego pliku.
+
+✔️ Struktura wywołania jest przygotowana, ale musisz tylko dopasować dokładną komendę i argumenty do tego, jak Twój program MD jest dostarczony.
+Integracja z MD Grupy 1
+– W run_md_algorithm aktualnie wywołujesz:
+
+[sys.executable, 'top_down_discretizer.py', orig_path, disc_path]
+
+Jeśli Twój MD Grupy 1 faktycznie jest top_down_discretizer.py, to jest OK.
+– Jeżeli zamiast skryptu Pythona musisz odpalć Group1MD.exe, wystarczy zamienić tę listę na:
+
+['Group1MD.exe', orig_path, disc_path]
+
+lub – jeśli exe wymaga wyłącznie orig_path i sam decyduje o nazwie wyjściowej – na
+
+['Group1MD.exe', orig_path]
+
+
