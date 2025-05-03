@@ -34,7 +34,11 @@ def top_down_discretization(data_path, min_samples = 5):
 def top_down_cuts(x, y, min_samples = 5):
     # Kryterium podstawowe - liczba odseparowanych par (Oblicza liczbę różnych klas w lewym i prawym segmencie)
     def separated_pairs(left_counts, right_counts):
-        return 0
+        total_left = left_counts.sum()
+        total_right = right_counts.sum()
+        # Wszystkie pary poza tymi w których klasa jest ta sama
+        same_class_pairs = np.sum(left_counts * right_counts)
+        return total_left * total_right - same_class_pairs
 
     # Kryterium dodatkowe - entropia (Oblicza entropię z tablicy counts (liczba próbek dla każdej klasy) i całkowitej liczby próbek)
     def entropy(counts, total):
@@ -123,7 +127,7 @@ def top_down_cuts(x, y, min_samples = 5):
 def apply_cuts(x, cuts):
     bins = np.array([-np.inf] + cuts + [np.inf])
     # np.digitize zwraca indeksy przedziałów od 1 do len(bins)-1 (poza -inf i inf)
-    bin_idx = np.digitize(x, bins[1:-1], right=False)
+    bin_idx = np.digitize(x, bins[1:-1], right=True)
     labels = []
     for i in range(len(bins) - 1):
         left = "-inf" if i == 0 else f"{bins[i]:.2f}"
@@ -139,7 +143,7 @@ def load_data(file_path: str) -> pd.DataFrame:
         raise FileNotFoundError(f"Plik {file_path} nie istnieje.")
 
     with open(file_path, 'r') as f:
-        first_line = f.readline().strip().split(';')
+        first_line = f.readline().strip().split(',')
 
     is_header = any(not val.replace(',', '').replace('.', '').isdigit() for val in first_line)
 
@@ -154,8 +158,3 @@ def save_result(data_path, disc_data):
     folder, file_name = os.path.split(data_path)
     result_path = os.path.join(folder, f"DISC{file_name}")
     disc_data.to_csv(result_path, index=False, header=False)
-
-if __name__ == "__main__":
-    import sys
-    path = sys.argv[1]    # np. "mojedane.csv"
-    top_down_discretization(path, min_samples=5)
